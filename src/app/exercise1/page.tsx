@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect } from 'react';
 import Range from '../../components/Range/Range';
 import { getNormalRange } from '../../mocks/api';
