@@ -1,9 +1,42 @@
-import React from 'react';
-import Range from '@/components/Range/Range';
+import React, { useState, useEffect } from 'react';
+import Range from '../../components/Range/Range';
+import { getFixedValues } from '../../mocks/api';
 
-const Exercise2 = () => {
-  const values = [1.99, 5.99, 10.99, 30.99, 50.99, 70.99];
-  return <Range min={values[0]} max={values[values.length - 1]} />;
+const Exercise2Page: React.FC = () => {
+  const [values, setValues] = useState<[number, number] | null>(null);
+  const [fixedValues, setFixedValues] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getFixedValues();
+        setFixedValues(data);
+        setValues([data[0], data[data.length - 1]]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleValuesChange = (newValues: [number, number]) => {
+    setValues(newValues);
+  };
+
+    if (!values || isLoading) {
+      return <div>Loading...</div>;
+    }
+
+  return (
+    <div>
+      <h1>Exercise 2: Fixed Values Range</h1>
+      <Range fixedValues={fixedValues} values={values} onValuesChange={handleValuesChange} />
+      <p>Selected Values: {values[0].toFixed(2)} - {values[1].toFixed(2)}</p>
+    </div>
+  );
 };
 
-export default Exercise2;
+export default Exercise2Page;
