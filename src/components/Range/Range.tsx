@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './styles.module.css';
 
@@ -24,21 +25,32 @@ const Range: React.FC<RangeProps> = ({
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      if (isDragging) {
-        const rangeRect = rangeRef.current?.getBoundingClientRect();
-        const handleWidth = handleMinRef.current?.offsetWidth || 0;
-        if (!rangeRect) return;
-
-        const offset = event.clientX - rangeRect.left - handleWidth / 2;
+      if (isDragging && rangeRef.current) {
+        const rangeRect = rangeRef.current.getBoundingClientRect();
         const rangeWidth = rangeRect.width;
+        const handleWidth = handleMinRef.current?.offsetWidth || 0;
+        const mousePosInTrack = event.clientX - rangeRect.left - handleWidth / 2;
 
-        let newValue: number;
-        if (selectedHandle === 'min') {
-          newValue = Math.max(min, Math.min(currentMax, (offset / rangeWidth) * (max - min) + min));
-          onValuesChange([newValue, currentMax]);
-        } else if (selectedHandle === 'max') {
-          newValue = Math.min(max, Math.max(currentMin, (offset / rangeWidth) * (max - min) + min));
-          onValuesChange([currentMin, newValue]);
+        let newValue = (mousePosInTrack / rangeWidth) * (max - min) + min;
+
+        if (fixedValues) { // Check if fixedValues exists
+          if (selectedHandle === 'min') {
+            newValue = fixedValues.reduce((prev, curr) => Math.abs(curr - newValue) < Math.abs(prev - newValue) ? curr : prev);
+            newValue = Math.max(min, Math.min(newValue, currentMax));
+            onValuesChange([newValue, currentMax]);
+          } else if (selectedHandle === 'max') {
+            newValue = fixedValues.reduce((prev, curr) => Math.abs(curr - newValue) < Math.abs(prev - newValue) ? curr : prev);
+            newValue = Math.min(max, Math.max(newValue, currentMin));
+            onValuesChange([currentMin, newValue]);
+          }
+        } else {
+          if (selectedHandle === 'min') {
+            newValue = Math.max(min, Math.min(newValue, currentMax));
+            onValuesChange([newValue, currentMax]);
+          } else if (selectedHandle === 'max') {
+            newValue = Math.min(max, Math.max(newValue, currentMin));
+            onValuesChange([currentMin, newValue]);
+          }
         }
       }
     };
@@ -46,41 +58,44 @@ const Range: React.FC<RangeProps> = ({
     const handleMouseUp = () => {
       setIsDragging(false);
       setSelectedHandle(null);
-      window.removeEventListener('mousemove', handleMouseMove); // Use window
-      window.removeEventListener('mouseup', handleMouseUp); // Use window
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
     };
 
     if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove); // Use window
-      window.addEventListener('mouseup', handleMouseUp); // Use window
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
     }
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove); // Clean up
+      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, min, max, currentMin, currentMax, onValuesChange, selectedHandle]);
+  }, [isDragging, min, max, currentMin, currentMax, onValuesChange, selectedHandle, fixedValues]);
 
   const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>, handle: 'min' | 'max') => {
     setIsDragging(true);
     setSelectedHandle(handle);
-    event.preventDefault(); // Prevent text selection during drag
+    event.stopPropagation();
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => { // Corrected this line
-    const rangeRect = rangeRef.current?.getBoundingClientRect();
-    if (!rangeRect) return;
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (rangeRef.current) {
+      const rangeRect = rangeRef.current.getBoundingClientRect();
+      const clickPosition = event.clientX - rangeRect.left;
+      let clickValue = (clickPosition / rangeRect.width) * (max - min) + min;
 
-    const clickPosition = event.clientX - rangeRect.left;
-    const clickValue = (clickPosition / rangeRect.width) * (max - min) + min;
+      if (fixedValues) {
+        clickValue = fixedValues.reduce((prev, curr) => Math.abs(curr - clickValue) < Math.abs(prev - clickValue) ? curr : prev);
+      }
 
-    if (Math.abs(clickValue - currentMin) < Math.abs(clickValue - currentMax)) {
-      onValuesChange([Math.max(min, Math.min(max, clickValue)), currentMax]);
-    } else {
-      onValuesChange([currentMin, Math.max(min, Math.min(max, clickValue))]);
+      if (Math.abs(clickValue - currentMin) < Math.abs(clickValue - currentMax)) {
+        onValuesChange([clickValue, currentMax]);
+      } else {
+        onValuesChange([currentMin, clickValue]);
+      }
     }
   };
-
 
   const getHandlePosition = (value: number) => {
     return ((value - min) / (max - min)) * 100;
