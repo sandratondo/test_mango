@@ -3,70 +3,88 @@ import React, { useState, useEffect, useRef, MouseEvent as ReactMouseEvent } fro
 import styles from './styles.module.css';
 
 interface RangeProps {
-    min?: number;
-    max?: number;
-    fixedValues?: number[];
-    values: [number, number];
-    onValuesChange: (values: [number, number]) => void;
+  min?: number;
+  max?: number;
+  fixedValues?: number[];
+  values: [number, number];
+  onValuesChange: (values: [number, number]) => void;
 }
 
 const Range: React.FC<RangeProps> = ({
-    min = 0,
-    max = 100,
-    fixedValues,
-    values: [currentMin, currentMax],
-    onValuesChange,
+  min = 0,
+  max = 100,
+  fixedValues,
+  values: [currentMin, currentMax],
+  onValuesChange,
 }) => {
-    const [isDragging, setIsDragging] = useState(false);
-    const [selectedHandle, setSelectedHandle] = useState<'min' | 'max' | null>(null);
-    const [dragPosition, setDragPosition] = useState<number | null>(null);
-    const rangeRef = useRef<HTMLDivElement>(null);
-    const handleMinRef = useRef<HTMLDivElement>(null);
-    const handleMaxRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [selectedHandle, setSelectedHandle] = useState<'min' | 'max' | null>(null);
+  const [dragPosition, setDragPosition] = useState<number | null>(null);
+  const rangeRef = useRef<HTMLDivElement>(null);
+  const handleMinRef = useRef<HTMLDivElement>(null);
+  const handleMaxRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const handleMouseMove = (event: globalThis.MouseEvent) => {
-            if (isDragging && rangeRef.current && fixedValues) {
-                const rangeRect = rangeRef.current.getBoundingClientRect();
-                const rangeWidth = rangeRect.width;
-                const handleWidth = handleMinRef.current?.offsetWidth || 0;
-                const mousePosInTrack = event.clientX - rangeRect.left - handleWidth / 2;
-
-                const realMin = fixedValues[0];
-                const realMax = fixedValues[fixedValues.length - 1];
-
-                let newPosition = (mousePosInTrack / rangeWidth) * 100;
-
-                const visualMin = getHandlePosition(realMin);
-                const visualMax = getHandlePosition(realMax);
-                newPosition = Math.max(visualMin, Math.min(newPosition, visualMax));
-
-                setDragPosition(newPosition);
-
-                // Actualizar valores *correctamente* durante el arrastre
-                const newValueInRange = realMin + (newPosition / 100) * (realMax - realMin);
-                if (selectedHandle === 'min') {
-                  onValuesChange([newValueInRange, currentMax]);
-                } else if (selectedHandle === 'max') {
-                  onValuesChange([currentMin, newValueInRange]);
-                }
+  useEffect(() => {
+    const handleMouseMove = (event: globalThis.MouseEvent) => {
+        if (isDragging && rangeRef.current) {
+          const rangeRect = rangeRef.current.getBoundingClientRect();
+          const rangeWidth = rangeRect.width;
+          const handleWidth = handleMinRef.current?.offsetWidth || 0;
+          let mousePosInTrack = event.clientX - rangeRect.left - handleWidth / 2;
+      
+          // Handle fixedValues case (Exercise 2)
+          if (fixedValues) {
+            const realMin = fixedValues[0];
+            const realMax = fixedValues[fixedValues.length - 1];
+      
+            let newPosition = (mousePosInTrack / rangeWidth) * 100;
+            const visualMin = getHandlePosition(realMin);
+            const visualMax = getHandlePosition(realMax);
+            newPosition = Math.max(visualMin, Math.min(newPosition, visualMax));
+      
+            setDragPosition(newPosition);
+      
+            // Update values correctly during dragging
+            const newValueInRange = realMin + (newPosition / 100) * (realMax - realMin);
+            if (selectedHandle === 'min') {
+              onValuesChange([newValueInRange, currentMax]);
+            } else if (selectedHandle === 'max') {
+              onValuesChange([currentMin, newValueInRange]);
             }
-        };
+          } else { // Handle normal range case (Exercise 1)
+            let newPosition = (mousePosInTrack / rangeWidth) * 100;
+            newPosition = Math.max(0, Math.min(newPosition, 100));
+  
+            setDragPosition(newPosition);
+  
+            const rangeDiff = max - min;
+            let newValue = min + (newPosition / 100) * rangeDiff;
+            if (selectedHandle === 'min') {
+              newValue = Math.max(min, Math.min(newValue, currentMax));
+              onValuesChange([newValue, currentMax]);
+            } else if (selectedHandle === 'max') {
+              newValue = Math.min(max, Math.max(newValue, currentMin));
+              onValuesChange([currentMin, newValue]);
+            }
+          }
+        }
+      };
 
-        const handleMouseUp = () => {
-            setIsDragging(false);
-            setSelectedHandle(null);
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setSelectedHandle(null);
+      document.body.style.cursor = 'default'; // Reset cursor
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
 
-            if (dragPosition !== null && fixedValues) {
-                const realMin = fixedValues[0];
-                const realMax = fixedValues[fixedValues.length - 1];
-                let newValueInRange = realMin + (dragPosition / 100) * (realMax - realMin);
+      if (dragPosition !== null && fixedValues) {
+        const realMin = fixedValues[0];
+        const realMax = fixedValues[fixedValues.length - 1];
+        let newValueInRange = realMin + (dragPosition / 100) * (realMax - realMin);
 
-                let newValue = fixedValues.reduce((prev, curr) =>
-                    Math.abs(curr - newValueInRange) < Math.abs(prev - newValueInRange) ? curr : prev
-                );
+        let newValue = fixedValues.reduce((prev, curr) =>
+          Math.abs(curr - newValueInRange) < Math.abs(prev - newValueInRange) ? curr : prev
+        );
 
                 if (selectedHandle === 'min') {
                     newValue = Math.min(newValue, currentMax);
