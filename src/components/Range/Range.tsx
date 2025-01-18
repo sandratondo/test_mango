@@ -4,16 +4,16 @@ import React, { useState, useEffect, useRef, MouseEvent as ReactMouseEvent } fro
 import styles from './styles.module.css';
 
 interface RangeProps {
-  min?: number;
-  max?: number;
+  min: number;
+  max: number;
   fixedValues?: number[];
   values: [number, number];
   onValuesChange: (values: [number, number]) => void;
 }
 
 const Range: React.FC<RangeProps> = ({
-  min = 0,
-  max = 100,
+  min,
+  max,
   fixedValues,
   values: [currentMin, currentMax],
   onValuesChange,

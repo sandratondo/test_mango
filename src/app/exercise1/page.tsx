@@ -4,17 +4,18 @@ import TestRange from "@/components/Range/Range";
 import { getNormalRange } from '../../mocks/api';
 
 const Exercise1Page = () => {
-  // Estado inicial para los valores del rango
   const [rangeValues, setRangeValues] = useState<[number, number]>([0, 0]);
   const [displayedValues, setDisplayedValues] = useState<[number, number]>([0, 0]);
+  const [limits, setLimits] = useState<{ min: number; max: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { min, max } = await getNormalRange();
+        setLimits({ min, max });
         setRangeValues([min, max]);
-        setDisplayedValues([min, max]);  // Establecer los valores de displayedValues también
+        setDisplayedValues([min, max]);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -25,7 +26,6 @@ const Exercise1Page = () => {
     fetchData();
   }, []);
 
-  // Función para manejar cambios en los valores del rango
   const handleValuesChange = (newValues: [number, number]) => {
     setRangeValues(newValues);
     setDisplayedValues(newValues);
@@ -41,15 +41,16 @@ const Exercise1Page = () => {
         <h2 className="mb-2">Ejercicio 1</h2>
         <h5 className="mb-5 grey">Rango personalizado</h5>
 
-        {/* Rango de valores en una sola línea */}
         <div className="d-flex justify-content-center align-items-center">
           <p className="mb-0" style={{ width: "70px" }}><strong>{displayedValues[0].toFixed(2)}</strong></p>
-          <TestRange
-            min={0} // Valor mínimo del rango
-            max={100} // Valor máximo del rango
-            values={rangeValues} // Valores actuales del rango
-            onValuesChange={handleValuesChange} // Callback para cambios
-          />
+          {limits && (
+            <TestRange
+              min={limits.min}
+              max={limits.max}
+              values={rangeValues}
+              onValuesChange={handleValuesChange}
+            />
+          )}
           <p className="mb-0" style={{ width: "70px" }}><strong>{displayedValues[1].toFixed(2)}</strong></p>
         </div>
       </div>

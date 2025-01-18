@@ -1,5 +1,5 @@
   export const getNormalRange = async (): Promise<{ min: number; max: number }> => {
-    return new Promise((resolve) => resolve({ min: 1.00, max: 100.00 }));
+    return new Promise((resolve) => resolve({ min: 1.00, max: 500.00 }));
   };
   
   export const getFixedValues = async (): Promise<number[]> => {

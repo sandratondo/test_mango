@@ -41,6 +41,8 @@ const Exercise2Page: React.FC = () => {
         {/* Componente de rango con valores fijos */}
         <div className="d-flex justify-content-center">
           <Range
+            min={fixedValues[0]} // El mínimo valor de fixedValues
+            max={fixedValues[fixedValues.length - 1]} // El máximo valor de fixedValues
             fixedValues={fixedValues}
             values={values}
             onValuesChange={handleValuesChange}
