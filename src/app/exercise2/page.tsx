@@ -14,13 +14,14 @@ const Exercise2Page: React.FC = () => {
       try {
         const data = await getFixedValues();
         setFixedValues(data);
-        setValues([data[0], data[data.length - 1]]);
+        setValues([data[0], data[data.length - 1]]); // Set initial values to min and max
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
@@ -28,9 +29,9 @@ const Exercise2Page: React.FC = () => {
     setValues(newValues);
   };
 
-    if (!values || isLoading) {
-      return <div>Loading...</div>;
-    }
+  if (!values || isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
