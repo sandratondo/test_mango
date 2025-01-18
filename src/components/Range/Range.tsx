@@ -33,6 +33,7 @@ const Range: React.FC<RangeProps> = ({
         const handleWidth = handleMinRef.current?.offsetWidth || 0;
         let mousePosInTrack = event.clientX - rangeRect.left - handleWidth / 2;
 
+        //exercise2 valores fijos
         if (fixedValues) {
           const realMin = fixedValues[0];
           const realMax = fixedValues[fixedValues.length - 1];
@@ -49,6 +50,8 @@ const Range: React.FC<RangeProps> = ({
           } else if (selectedHandle === 'max') {
             onValuesChange([currentMin, newValueInRange]);
           }
+        
+        //exercise1 rango normal
         } else {
           let newPosition = (mousePosInTrack / rangeWidth) * 100;
           newPosition = Math.max(0, Math.min(newPosition, 100));
