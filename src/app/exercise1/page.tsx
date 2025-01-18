@@ -1,15 +1,39 @@
 'use client';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TestRange from "@/components/Range/Range";
+import { getNormalRange } from '../../mocks/api';
 
 const Exercise1Page = () => {
   // Estado inicial para los valores del rango
-  const [rangeValues, setRangeValues] = useState<[number, number]>([20, 80]);
+  const [rangeValues, setRangeValues] = useState<[number, number]>([0, 0]);
+  const [displayedValues, setDisplayedValues] = useState(rangeValues);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { min, max } = await getNormalRange();
+        setRangeValues([min, max]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // Handle error, e.g., display an error message
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Función para manejar cambios en los valores del rango
   const handleValuesChange = (newValues: [number, number]) => {
     setRangeValues(newValues);
+    setDisplayedValues(newValues);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div style={{ padding: "20px" }}>
@@ -20,6 +44,7 @@ const Exercise1Page = () => {
         values={rangeValues} // Valores actuales del rango
         onValuesChange={handleValuesChange} // Callback para cambios
       />
+      <p>Selected Values: {displayedValues[0].toFixed(2)} - {displayedValues[1].toFixed(2)}</p>
     </div>
   );
 };
