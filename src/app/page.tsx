@@ -13,7 +13,7 @@ export default function Home() {
       </div>
 
       <h4 className="text-center">Prueba técnica</h4>
-      <p className="text-center">Selecciona un ejercicio</p>
+      <p className="text-center">Selecciona un ejercicio de rango</p>
       
       {/* Botones de enlace */}
       <div className="d-flex justify-content-center gap-3">
