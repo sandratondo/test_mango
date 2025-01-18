@@ -42,6 +42,14 @@ const Range: React.FC<RangeProps> = ({
                 newPosition = Math.max(visualMin, Math.min(newPosition, visualMax));
 
                 setDragPosition(newPosition);
+
+                // Actualizar valores *correctamente* durante el arrastre
+                const newValueInRange = realMin + (newPosition / 100) * (realMax - realMin);
+                if (selectedHandle === 'min') {
+                  onValuesChange([newValueInRange, currentMax]);
+                } else if (selectedHandle === 'max') {
+                  onValuesChange([currentMin, newValueInRange]);
+                }
             }
         };
 
