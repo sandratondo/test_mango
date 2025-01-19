@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import TestRange from "@/components/Range/Range";
 import { getNormalRange } from '../../mocks/api';
+import Link from "next/link";
 
 const Exercise1Page = () => {
   const [rangeValues, setRangeValues] = useState<[number, number]>([0, 0]);
@@ -36,22 +37,29 @@ const Exercise1Page = () => {
   }
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ padding: "20px" }}>
-      <div className="text-center p-5 border rounded shadow-lg bg-light w-100" style={{ maxWidth: "600px" }}>
-        <h2 className="mb-2">Ejercicio 1</h2>
-        <h5 className="mb-5 grey">Rango personalizado</h5>
+    <div>
+      <div className="m-4 wrap">
+        <Link href="/" className="custom-link">
+          VOLVER
+        </Link>
+      </div>
+      <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ padding: "20px" }}>
+        <div className="text-center p-5 border rounded shadow-lg bg-light w-100" style={{ maxWidth: "600px" }}>
+          <h2 className="mb-2">Ejercicio 1</h2>
+          <h5 className="mb-5 grey">Rango personalizado</h5>
 
-        <div className="d-flex justify-content-center align-items-center">
-          <p className="mb-0" style={{ width: "70px" }}><strong>{displayedValues[0].toFixed(2)}</strong></p>
-          {limits && (
-            <TestRange
-              min={limits.min}
-              max={limits.max}
-              values={rangeValues}
-              onValuesChange={handleValuesChange}
-            />
-          )}
-          <p className="mb-0" style={{ width: "70px" }}><strong>{displayedValues[1].toFixed(2)}</strong></p>
+          <div className="d-flex justify-content-center align-items-center">
+            <p className="mb-0" style={{ width: "80px" }}><strong>{displayedValues[0].toFixed(2)}€</strong></p>
+            {limits && (
+              <TestRange
+                min={limits.min}
+                max={limits.max}
+                values={rangeValues}
+                onValuesChange={handleValuesChange}
+              />
+            )}
+            <p className="mb-0" style={{ width: "80px" }}><strong>{displayedValues[1].toFixed(2)}€</strong></p>
+          </div>
         </div>
       </div>
     </div>

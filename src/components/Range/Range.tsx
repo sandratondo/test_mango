@@ -146,7 +146,7 @@ const Range: React.FC<RangeProps> = ({
         style={getHandleStyle('min')}
         onMouseDown={(e) => handleMouseDown(e, 'min')}
       >
-        <span className={styles.handleLabel}>{getDisplayedValue('min').toFixed(2)}</span>
+        <span className={styles.handleLabel} style={{ marginLeft: "-10px" }}>{getDisplayedValue('min').toFixed(2)}€</span>
       </div>
       <div
         ref={handleMaxRef}
@@ -154,7 +154,7 @@ const Range: React.FC<RangeProps> = ({
         style={getHandleStyle('max')}
         onMouseDown={(e) => handleMouseDown(e, 'max')}
       >
-        <span className={styles.handleLabel}>{getDisplayedValue('max').toFixed(2)}</span>
+        <span className={styles.handleLabel} style={{ marginLeft: "10px" }}>{getDisplayedValue('max').toFixed(2)}€</span>
       </div>
     </div>
   );
