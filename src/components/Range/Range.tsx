@@ -1,14 +1,14 @@
 'use client';
-
 import React, { useState, useEffect, useRef, MouseEvent as ReactMouseEvent } from 'react';
 import styles from './styles.module.css';
 
+//propiedades que recibe
 interface RangeProps {
   min: number;
   max: number;
   fixedValues?: number[];
   values: [number, number];
-  onValuesChange: (values: [number, number]) => void;
+  onValuesChange: (values: [number, number]) => void; //actualiza valores
 }
 
 const Range: React.FC<RangeProps> = ({
@@ -25,68 +25,75 @@ const Range: React.FC<RangeProps> = ({
   const handleMinRef = useRef<HTMLDivElement>(null);
   const handleMaxRef = useRef<HTMLDivElement>(null);
 
+  //para manejar eventos
   useEffect(() => {
-    const handleMouseMove = (event: globalThis.MouseEvent) => {
+    const handlePointerMove = (event: MouseEvent | TouchEvent) => {
       if (isDragging && rangeRef.current) {
         const rangeRect = rangeRef.current.getBoundingClientRect();
         const rangeWidth = rangeRect.width;
         const handleWidth = handleMinRef.current?.offsetWidth || 0;
-        let mousePosInTrack = event.clientX - rangeRect.left - handleWidth / 2;
-
-        //exercise2 valores fijos
+  
+        // Detectar posición ratón o táctil
+        const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+        let mousePosInTrack = clientX - rangeRect.left - handleWidth / 2;
+  
+        //valores fijos ej.2 ajusta a los más cercanos
         if (fixedValues) {
           const realMin = fixedValues[0];
           const realMax = fixedValues[fixedValues.length - 1];
           let newPosition = (mousePosInTrack / rangeWidth) * 100;
           const visualMin = getHandlePosition(realMin);
           const visualMax = getHandlePosition(realMax);
-          newPosition = Math.max(visualMin, Math.min(newPosition, visualMax));
-
+          newPosition = Math.max(visualMin, Math.min(newPosition, visualMax)); //para no sobre pasar rango visual
           setDragPosition(newPosition);
-
+  
+          //actualizar valores 
           const newValueInRange = realMin + (newPosition / 100) * (realMax - realMin);
           if (selectedHandle === 'min') {
             onValuesChange([newValueInRange, currentMax]);
           } else if (selectedHandle === 'max') {
             onValuesChange([currentMin, newValueInRange]);
           }
-        
-        //exercise1 rango normal
+
         } else {
+          //rango normal ej.1
           let newPosition = (mousePosInTrack / rangeWidth) * 100;
           newPosition = Math.max(0, Math.min(newPosition, 100));
-
           setDragPosition(newPosition);
-
+  
           const rangeDiff = max - min;
           let newValue = min + (newPosition / 100) * rangeDiff;
           if (selectedHandle === 'min') {
-            newValue = Math.max(min, Math.min(newValue, currentMax));
+            newValue = Math.max(min, Math.min(newValue, currentMax)); // Ajusta al valor máximo permitido
             onValuesChange([newValue, currentMax]);
           } else if (selectedHandle === 'max') {
-            newValue = Math.min(max, Math.max(newValue, currentMin));
+            newValue = Math.min(max, Math.max(newValue, currentMin)); // Ajusta al valor mínimo permitido
             onValuesChange([currentMin, newValue]);
           }
         }
       }
     };
-
-    const handleMouseUp = () => {
+  
+    // Maneja el evento de soltar 
+    const handlePointerUp = () => {
       setIsDragging(false);
       setSelectedHandle(null);
       document.body.style.cursor = 'default';
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-
+      window.removeEventListener('mousemove', handlePointerMove);
+      window.removeEventListener('mouseup', handlePointerUp);
+      window.removeEventListener('touchmove', handlePointerMove);
+      window.removeEventListener('touchend', handlePointerUp);
+  
+      // Ajusta al valor fijo más cercano
       if (dragPosition !== null && fixedValues) {
         const realMin = fixedValues[0];
         const realMax = fixedValues[fixedValues.length - 1];
         let newValueInRange = realMin + (dragPosition / 100) * (realMax - realMin);
-
+  
         let newValue = fixedValues.reduce((prev, curr) =>
           Math.abs(curr - newValueInRange) < Math.abs(prev - newValueInRange) ? curr : prev
         );
-
+  
         if (selectedHandle === 'min') {
           newValue = Math.min(newValue, currentMax);
           onValuesChange([newValue, currentMax]);
@@ -97,25 +104,39 @@ const Range: React.FC<RangeProps> = ({
         setDragPosition(null);
       }
     };
-
+  
+    // Agregar listeners si arrastrando
     if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mousemove', handlePointerMove);
+      window.addEventListener('mouseup', handlePointerUp);
+      window.addEventListener('touchmove', handlePointerMove);
+      window.addEventListener('touchend', handlePointerUp);
     }
-
+  
+    // Limpiar listeners
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handlePointerMove);
+      window.removeEventListener('mouseup', handlePointerUp);
+      window.removeEventListener('touchmove', handlePointerMove);
+      window.removeEventListener('touchend', handlePointerUp);
     };
   }, [isDragging, fixedValues, currentMin, currentMax, onValuesChange, selectedHandle, dragPosition]);
+  
 
-  const handleMouseDown = (event: ReactMouseEvent<HTMLDivElement>, handle: 'min' | 'max') => {
+  // Inicia el arrastre
+  const handlePointerDown = (
+    event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
+    handle: 'min' | 'max'
+  ) => {
     setIsDragging(true);
     setSelectedHandle(handle);
+  
     event.preventDefault();
     event.stopPropagation();
   };
+  
 
+  // Calcula la posición visual
   const getHandlePosition = (value: number) => {
     if (!fixedValues) return ((value - min) / (max - min)) * 100;
     const realMin = fixedValues[0];
@@ -123,6 +144,7 @@ const Range: React.FC<RangeProps> = ({
     return ((value - realMin) / (realMax - realMin)) * 100;
   };
 
+  // Obtiene el valor mostrado
   const getDisplayedValue = (handle: 'min' | 'max') => {
     if (isDragging && selectedHandle === handle && dragPosition !== null && fixedValues) {
       const realMin = fixedValues[0];
@@ -140,21 +162,27 @@ const Range: React.FC<RangeProps> = ({
   return (
     <div className={styles.rangeContainer} ref={rangeRef}>
       <div className={styles.rangeTrack} />
-      <div
-        ref={handleMinRef}
-        className={`${styles.rangeHandle} ${selectedHandle === 'min' ? styles.activeHandle : ''}`}
-        style={getHandleStyle('min')}
-        onMouseDown={(e) => handleMouseDown(e, 'min')}
-      >
-        <span className={styles.handleLabel} style={{ marginLeft: "-10px" }}>{getDisplayedValue('min').toFixed(2)}€</span>
-      </div>
-      <div
-        ref={handleMaxRef}
-        className={`${styles.rangeHandle} ${selectedHandle === 'max' ? styles.activeHandle : ''}`}
-        style={getHandleStyle('max')}
-        onMouseDown={(e) => handleMouseDown(e, 'max')}
-      >
-        <span className={styles.handleLabel} style={{ marginLeft: "10px" }}>{getDisplayedValue('max').toFixed(2)}€</span>
+        <div
+          ref={handleMinRef}
+          className={`${styles.rangeHandle} ${selectedHandle === 'min' ? styles.activeHandle : ''}`}
+          style={getHandleStyle('min')}
+          onMouseDown={(e) => handlePointerDown(e, 'min')}
+          onTouchStart={(e) => handlePointerDown(e, 'min')}
+        >
+          <span className={styles.handleLabel} style={{ marginLeft: '-12px' }}>
+            {getDisplayedValue('min').toFixed(2)}€
+          </span>
+        </div>
+        <div
+          ref={handleMaxRef}
+          className={`${styles.rangeHandle} ${selectedHandle === 'max' ? styles.activeHandle : ''}`}
+          style={getHandleStyle('max')}
+          onMouseDown={(e) => handlePointerDown(e, 'max')}
+          onTouchStart={(e) => handlePointerDown(e, 'max')}
+        >
+          <span className={styles.handleLabel} style={{ marginLeft: '12px' }}>
+            {getDisplayedValue('max').toFixed(2)}€
+          </span>
       </div>
     </div>
   );
