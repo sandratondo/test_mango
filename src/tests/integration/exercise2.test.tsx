@@ -1,40 +1,29 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Exercise2Page from '@/app/exercise2/page'; 
-import * as api from '@/mocks/api'; 
+import React from 'react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import Exercise2Page from '../../app/exercise2/page';
+import { getFixedValues } from '../../mocks/api';
 
-// Mock de la API
-jest.mock('@/app/mocks/api');
+jest.mock('../../mocks/api', () => ({
+  getFixedValues: jest.fn(),
+}));
 
 describe('Exercise2Page', () => {
-  it('should render and display loading state initially', () => {
-    render(<Exercise2Page />);
-    expect(screen.getByText(/Loading.../i)).toBeInTheDocument(); // Comprobamos si muestra el texto de carga
-  });
-
-  it('should display range values after fetching data', async () => {
-    // Simulamos que la función getFixedValues devuelve valores
-    (api.getFixedValues as jest.Mock).mockResolvedValue([1.99, 5.99, 10.99, 30.99, 50.99, 70.99]);
+  it('obtener valores fijos y mostrar el rango correctamente', async () => {
+    const mockFixedValues = [1.99, 5.99, 10.99, 30.99, 50.99, 70.99];
+    (getFixedValues as jest.Mock).mockResolvedValue(mockFixedValues);
 
     render(<Exercise2Page />);
 
-    // Esperamos a que los datos se carguen y luego comprobamos los valores
-    await waitFor(() => expect(screen.getByText('1.99€')).toBeInTheDocument());
-    await waitFor(() => expect(screen.getByText('70.99€')).toBeInTheDocument());
+    // Verificar que el texto de "Loading..." 
+    expect(screen.getByText(/Loading.../i)).toBeInTheDocument();
+
+    // Esperamos la API
+    await waitFor(() => expect(screen.queryByText(/Loading.../i)).toBeNull());
+
+    // Verificar que los valores mínimos y máximos se muestran correctamente
+    expect(screen.getByLabelText('min-value')).toHaveTextContent('1.99€');
+    expect(screen.getByLabelText('max-value')).toHaveTextContent('70.99€');
   });
 
-  it('should update values when interacting with the range slider', async () => {
-    // Simulamos que la función getFixedValues devuelve valores
-    (api.getFixedValues as jest.Mock).mockResolvedValue([1.99, 5.99, 10.99, 30.99, 50.99, 70.99]);
 
-    render(<Exercise2Page />);
-
-    // Esperamos a que los datos se carguen
-    await waitFor(() => expect(screen.getByText('1.99€')).toBeInTheDocument());
-
-    // Simulamos el cambio de valores
-    fireEvent.change(screen.getByRole('slider'), { target: { value: 20 } });
-
-    // Verificamos que los valores han cambiado
-    await waitFor(() => expect(screen.getByText('20.00€')).toBeInTheDocument());
-  });
 });

@@ -1,8 +1,13 @@
 module.exports = {
     presets: [
-      '@babel/preset-env',     // Para transformar código moderno de JS
-      '@babel/preset-react',   // Para transformar JSX
-      '@babel/preset-typescript',  // Si estás utilizando TypeScript
+      [
+        "@babel/preset-react",
+        {
+          runtime: "automatic", // Habilita el nuevo runtime de React
+        },
+      ],
+      "@babel/preset-env",
+      "@babel/preset-typescript",
     ],
   };
   

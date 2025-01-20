@@ -49,7 +49,7 @@ const Exercise1Page = () => {
           <h5 className="mb-5 grey">Rango personalizado</h5>
 
           <div className="d-flex justify-content-center align-items-center">
-            <p className="mb-0" style={{ width: "80px" }}><strong>{displayedValues[0].toFixed(2)}€</strong></p>
+            <p className="mb-0" style={{ width: "80px" }}  data-testid="min-value"><strong>{displayedValues[0].toFixed(2)}€</strong></p>
             {limits && (
               <TestRange
                 min={limits.min}
@@ -58,7 +58,7 @@ const Exercise1Page = () => {
                 onValuesChange={handleValuesChange}
               />
             )}
-            <p className="mb-0" style={{ width: "80px" }}><strong>{displayedValues[1].toFixed(2)}€</strong></p>
+            <p className="mb-0" style={{ width: "80px" }}  data-testid="max-value"><strong>{displayedValues[1].toFixed(2)}€</strong></p>
           </div>
         </div>
       </div>

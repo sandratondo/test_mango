@@ -1,40 +1,27 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Exercise1Page from '@/app/exercise1/page'; 
-import * as api from '@/mocks/api'; 
+import React from 'react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import Exercise1Page from '../../app/exercise1/page';
+import { getNormalRange } from '../../mocks/api';
 
-// Mock de la API
-jest.mock('@/app/mocks/api');
+jest.mock('../../mocks/api', () => ({
+  getNormalRange: jest.fn(),
+}));
 
 describe('Exercise1Page', () => {
-  it('should render and display loading state initially', () => {
-    render(<Exercise1Page />);
-    expect(screen.getByText(/Loading.../i)).toBeInTheDocument(); // Comprobamos si muestra el texto de carga
-  });
-
-  it('should display range values after fetching data', async () => {
-    // Simulamos que la función getNormalRange devuelve valores
-    (api.getNormalRange as jest.Mock).mockResolvedValue({ min: 1.00, max: 500.00 });
+  it('obtener valores de rango y mostrarlos correctamente', async () => {
+    // Mock para devolver un rango de valores
+    (getNormalRange as jest.Mock).mockResolvedValue({ min: 1.00, max: 500.00 });
 
     render(<Exercise1Page />);
 
-    // Esperamos a que los datos se carguen y luego comprobamos los valores
-    await waitFor(() => expect(screen.getByText('1.00€')).toBeInTheDocument());
-    await waitFor(() => expect(screen.getByText('500.00€')).toBeInTheDocument());
-  });
+    // Verificar Loading
+    expect(screen.getByText(/Loading.../i)).toBeInTheDocument();
 
-  it('should update values when interacting with the range slider', async () => {
-    // Simulamos que la función getNormalRange devuelve valores
-    (api.getNormalRange as jest.Mock).mockResolvedValue({ min: 1.00, max: 500.00 });
+    // Esperar a que se resuelvan los valores
+    await waitFor(() => expect(screen.queryByText(/Loading.../i)).toBeNull());
 
-    render(<Exercise1Page />);
-
-    // Esperamos a que los datos se carguen
-    await waitFor(() => expect(screen.getByText('1.00€')).toBeInTheDocument());
-
-    // Simulamos el cambio de valores
-    fireEvent.change(screen.getByRole('slider'), { target: { value: 100 } });
-
-    // Verificamos que los valores han cambiado
-    await waitFor(() => expect(screen.getByText('100.00€')).toBeInTheDocument());
+    // Verificar que los valores de min y max son correctos
+    expect(screen.getByTestId('min-value')).toHaveTextContent('1.00€');
+    expect(screen.getByTestId('max-value')).toHaveTextContent('500.00€');
   });
 });

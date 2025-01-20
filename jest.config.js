@@ -1,16 +1,23 @@
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest', // Para TypeScript
-    '^.+\\.(js|jsx|tsx)$': 'babel-jest', // Para JavaScript y JSX
-  },
+  preset: 'ts-jest', // Simplificado
   testEnvironment: 'jsdom',
-  transformIgnorePatterns: [
-    '/node_modules/(?!react|react-dom|some-library-you-need-to-transform)/', // Incluir react y react-dom si es necesario
-  ],
-  moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx'],
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],  // Para ECMAScript Modules (si es necesario)
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setupTests.ts'],
   moduleNameMapper: {
-    // Aquí resolvemos el alias '@' a la ruta correspondiente en el proyecto
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^.+\\.(css|less|sass|scss)$': 'identity-obj-proxy',
   },
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+  },
+  collectCoverageFrom: [
+    'src/**/*.{js,jsx,ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/__tests__/**',
+    '!src/**/[\\/]__(mocks|fixtures|stories)[\\/]',
+    '!src/pages/api/**',
+    '!src/app/layout.tsx',
+    '!src/app/not-found.tsx',
+  ],
+  modulePathIgnorePatterns: ['<rootDir>/src/mocks/__mocks__'],
 };

@@ -47,7 +47,7 @@ const Exercise2Page: React.FC = () => {
           
           {/* Componente de rango con valores fijos */}
           <div className="d-flex justify-content-center align-items-center">
-            <p className="mb-0" style={{ width: "80px" }}><strong>{values[0].toFixed(2)}€</strong></p>
+            <p className="mb-0" style={{ width: "80px" }} aria-label="min-value"><strong>{values[0].toFixed(2)}€</strong></p>
               <Range
                 min={fixedValues[0]} // El mínimo valor de fixedValues
                 max={fixedValues[fixedValues.length - 1]} // El máximo valor de fixedValues
@@ -55,7 +55,7 @@ const Exercise2Page: React.FC = () => {
                 values={values}
                 onValuesChange={handleValuesChange}
               />
-            <p className="mb-0" style={{ width: "80px" }}><strong>{values[1].toFixed(2)}€</strong></p>
+            <p className="mb-0" style={{ width: "80px" }} aria-label="max-value"><strong>{values[1].toFixed(2)}€</strong></p>
           </div>
         </div>
       </div>

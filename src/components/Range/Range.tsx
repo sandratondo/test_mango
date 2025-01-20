@@ -49,10 +49,14 @@ const Range: React.FC<RangeProps> = ({
   
           //actualizar valores 
           const newValueInRange = realMin + (newPosition / 100) * (realMax - realMin);
+          let adjustedValue = fixedValues.reduce((prev, curr) =>
+            Math.abs(curr - newValueInRange) < Math.abs(prev - newValueInRange) ? curr : prev
+          );
+
           if (selectedHandle === 'min') {
-            onValuesChange([newValueInRange, currentMax]);
+            onValuesChange([adjustedValue, currentMax]);
           } else if (selectedHandle === 'max') {
-            onValuesChange([currentMin, newValueInRange]);
+            onValuesChange([currentMin, adjustedValue]);
           }
 
         } else {
@@ -109,7 +113,7 @@ const Range: React.FC<RangeProps> = ({
     if (isDragging) {
       window.addEventListener('mousemove', handlePointerMove);
       window.addEventListener('mouseup', handlePointerUp);
-      window.addEventListener('touchmove', handlePointerMove);
+      window.addEventListener('touchmove', handlePointerMove, { passive: false }); 
       window.addEventListener('touchend', handlePointerUp);
     }
   
@@ -160,7 +164,7 @@ const Range: React.FC<RangeProps> = ({
   };
 
   return (
-    <div className={styles.rangeContainer} ref={rangeRef}>
+    <div className={styles.rangeContainer} ref={rangeRef}  data-testid="range-component">
       <div className={styles.rangeTrack} />
         <div
           ref={handleMinRef}
@@ -168,6 +172,12 @@ const Range: React.FC<RangeProps> = ({
           style={getHandleStyle('min')}
           onMouseDown={(e) => handlePointerDown(e, 'min')}
           onTouchStart={(e) => handlePointerDown(e, 'min')}
+          role="slider" 
+          aria-label="min" 
+          aria-valuemin={min} 
+          aria-valuemax={max} 
+          aria-valuenow={getDisplayedValue('min')} 
+          data-testid="handle-min"
         >
           <span className={styles.handleLabel} style={{ marginLeft: '-12px' }}>
             {getDisplayedValue('min').toFixed(2)}€
@@ -179,6 +189,12 @@ const Range: React.FC<RangeProps> = ({
           style={getHandleStyle('max')}
           onMouseDown={(e) => handlePointerDown(e, 'max')}
           onTouchStart={(e) => handlePointerDown(e, 'max')}
+          role="slider" 
+          aria-label="max" 
+          aria-valuemin={min} 
+          aria-valuemax={max} 
+          aria-valuenow={getDisplayedValue('max')} 
+          data-testid="handle-max"
         >
           <span className={styles.handleLabel} style={{ marginLeft: '12px' }}>
             {getDisplayedValue('max').toFixed(2)}€
