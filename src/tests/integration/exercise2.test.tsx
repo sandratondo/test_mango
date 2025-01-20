@@ -14,7 +14,7 @@ describe('Exercise2Page', () => {
 
     render(<Exercise2Page />);
 
-    // Verificar que el texto de "Loading..." 
+    // Verificar loading
     expect(screen.getByText(/Loading.../i)).toBeInTheDocument();
 
     // Esperamos la API
