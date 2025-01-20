@@ -1,6 +1,6 @@
 # Proyecto de Rango Personalizado
 
-Este proyecto implementa un control deslizante (slider) con un rango personalizado, donde los valores mínimo y máximo pueden ser definidos de forma dinámica o a partir de un conjunto de valores fijos. Este control deslizante es útil en situaciones donde se necesita elegir un rango específico de valores, como en aplicaciones e-comerce, de precios o ajustes de configuraciones.
+Este proyecto implementa un control deslizante (slider) con un rango personalizado, donde los valores mínimo y máximo pueden ser definidos de forma dinámica o a partir de un conjunto de valores fijos. Este control deslizante es útil en situaciones donde se necesita elegir un rango específico de valores, como en aplicaciones e-commerce, de precios o ajustes de configuraciones.
 
 ## Estructura del Proyecto
 
