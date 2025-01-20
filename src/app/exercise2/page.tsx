@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect } from 'react';
 import Range from '../../components/Range/Range';
@@ -10,12 +9,13 @@ const Exercise2Page: React.FC = () => {
   const [fixedValues, setFixedValues] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  //conecta con mocks api
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getFixedValues();
         setFixedValues(data);
-        setValues([data[0], data[data.length - 1]]); // Set initial values to min and max
+        setValues([data[0], data[data.length - 1]]); // fija valores iniciales mínimo y máximo
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {

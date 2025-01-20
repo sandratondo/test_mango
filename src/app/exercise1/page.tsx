@@ -10,6 +10,7 @@ const Exercise1Page = () => {
   const [limits, setLimits] = useState<{ min: number; max: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  //conecta con mocks api
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -27,6 +28,7 @@ const Exercise1Page = () => {
     fetchData();
   }, []);
 
+  //actualiza el estado rangeValues y displayedValues con los nuevos valores seleccionados
   const handleValuesChange = (newValues: [number, number]) => {
     setRangeValues(newValues);
     setDisplayedValues(newValues);

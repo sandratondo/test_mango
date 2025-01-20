@@ -67,7 +67,7 @@ describe('Range Component', () => {
         min: 10,
         max: 500,
         fixedValues: [10, 100, 200, 300, 400, 500], // Define valores fijos
-        values: [50, 200] as [number, number], // Ajusta a una tupla
+        values: [50, 200] as [number, number], 
         onValuesChange: onValuesChangeMock,
       };
       
@@ -90,7 +90,7 @@ describe('Range Component', () => {
     const props = {
         min: 10,
         max: 500,
-        values: [200, 200] as [number, number], // Ajusta a una tupla
+        values: [200, 200] as [number, number], 
         onValuesChange: onValuesChangeMock,
       };
       
