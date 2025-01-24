@@ -49,14 +49,10 @@ const Range: React.FC<RangeProps> = ({
   
           //actualizar valores 
           const newValueInRange = realMin + (newPosition / 100) * (realMax - realMin);
-          let adjustedValue = fixedValues.reduce((prev, curr) =>
-            Math.abs(curr - newValueInRange) < Math.abs(prev - newValueInRange) ? curr : prev
-          );
-
           if (selectedHandle === 'min') {
-            onValuesChange([adjustedValue, currentMax]);
+            onValuesChange([newValueInRange, currentMax]);
           } else if (selectedHandle === 'max') {
-            onValuesChange([currentMin, adjustedValue]);
+            onValuesChange([currentMin, newValueInRange]);
           }
 
         } else {
@@ -64,9 +60,10 @@ const Range: React.FC<RangeProps> = ({
           let newPosition = (mousePosInTrack / rangeWidth) * 100;
           newPosition = Math.max(0, Math.min(newPosition, 100));
           setDragPosition(newPosition);
-  
+
           const rangeDiff = max - min;
           let newValue = min + (newPosition / 100) * rangeDiff;
+
           if (selectedHandle === 'min') {
             newValue = Math.max(min, Math.min(newValue, currentMax)); // Ajusta al valor máximo permitido
             onValuesChange([newValue, currentMax]);
@@ -77,7 +74,7 @@ const Range: React.FC<RangeProps> = ({
         }
       }
     };
-  
+
     // Maneja el evento de soltar 
     const handlePointerUp = () => {
       setIsDragging(false);
@@ -87,7 +84,8 @@ const Range: React.FC<RangeProps> = ({
       window.removeEventListener('mouseup', handlePointerUp);
       window.removeEventListener('touchmove', handlePointerMove);
       window.removeEventListener('touchend', handlePointerUp);
-  
+      setDragPosition(null);
+
       // Ajusta al valor fijo más cercano
       if (dragPosition !== null && fixedValues) {
         const realMin = fixedValues[0];
@@ -108,15 +106,15 @@ const Range: React.FC<RangeProps> = ({
         setDragPosition(null);
       }
     };
-  
+
     // Agregar listeners si arrastrando
     if (isDragging) {
       window.addEventListener('mousemove', handlePointerMove);
       window.addEventListener('mouseup', handlePointerUp);
-      window.addEventListener('touchmove', handlePointerMove, { passive: false }); 
+      window.addEventListener('touchmove', handlePointerMove, { passive: false });
       window.addEventListener('touchend', handlePointerUp);
     }
-  
+
     // Limpiar listeners
     return () => {
       window.removeEventListener('mousemove', handlePointerMove);
@@ -125,7 +123,6 @@ const Range: React.FC<RangeProps> = ({
       window.removeEventListener('touchend', handlePointerUp);
     };
   }, [isDragging, fixedValues, currentMin, currentMax, onValuesChange, selectedHandle, dragPosition]);
-  
 
   // Inicia el arrastre
   const handlePointerDown = (
@@ -134,11 +131,9 @@ const Range: React.FC<RangeProps> = ({
   ) => {
     setIsDragging(true);
     setSelectedHandle(handle);
-  
-    event.preventDefault();
+
     event.stopPropagation();
   };
-  
 
   // Calcula la posición visual
   const getHandlePosition = (value: number) => {
@@ -150,55 +145,65 @@ const Range: React.FC<RangeProps> = ({
 
   // Obtiene el valor mostrado
   const getDisplayedValue = (handle: 'min' | 'max') => {
-    if (isDragging && selectedHandle === handle && dragPosition !== null && fixedValues) {
-      const realMin = fixedValues[0];
-      const realMax = fixedValues[fixedValues.length - 1];
-      return realMin + (dragPosition / 100) * (realMax - realMin);
+    if (isDragging && selectedHandle === handle && dragPosition !== null) {
+      const rangeDiff = max - min;
+      const newValue = min + (dragPosition / 100) * rangeDiff;
+
+      if (handle === 'min') {
+        return Math.min(newValue, currentMax);
+      } else {
+        return Math.max(newValue, currentMin);
+      }
     }
+
     return handle === 'min' ? currentMin : currentMax;
   };
 
+  //mostrar el pito de puntero
   const getHandleStyle = (handle: 'min' | 'max') => {
-    const position = isDragging && selectedHandle === handle && dragPosition !== null ? dragPosition : getHandlePosition(handle === 'min' ? currentMin : currentMax);
+    const position =
+      isDragging && selectedHandle === handle && dragPosition !== null
+        ? dragPosition
+        : getHandlePosition(handle === 'min' ? currentMin : currentMax);
     return { left: `${position}%` };
   };
 
   return (
-    <div className={styles.rangeContainer} ref={rangeRef}  data-testid="range-component">
+    <div className={styles.rangeContainer} ref={rangeRef} data-testid="range-component">
       <div className={styles.rangeTrack} />
-        <div
-          ref={handleMinRef}
-          className={`${styles.rangeHandle} ${selectedHandle === 'min' ? styles.activeHandle : ''}`}
-          style={getHandleStyle('min')}
-          onMouseDown={(e) => handlePointerDown(e, 'min')}
-          onTouchStart={(e) => handlePointerDown(e, 'min')}
-          role="slider" 
-          aria-label="min" 
-          aria-valuemin={min} 
-          aria-valuemax={max} 
-          aria-valuenow={getDisplayedValue('min')} 
-          data-testid="handle-min"
-        >
-          <span className={styles.handleLabel} style={{ marginLeft: '-12px' }}>
-            {getDisplayedValue('min').toFixed(2)}€
-          </span>
-        </div>
-        <div
-          ref={handleMaxRef}
-          className={`${styles.rangeHandle} ${selectedHandle === 'max' ? styles.activeHandle : ''}`}
-          style={getHandleStyle('max')}
-          onMouseDown={(e) => handlePointerDown(e, 'max')}
-          onTouchStart={(e) => handlePointerDown(e, 'max')}
-          role="slider" 
-          aria-label="max" 
-          aria-valuemin={min} 
-          aria-valuemax={max} 
-          aria-valuenow={getDisplayedValue('max')} 
-          data-testid="handle-max"
-        >
-          <span className={styles.handleLabel} style={{ marginLeft: '12px' }}>
-            {getDisplayedValue('max').toFixed(2)}€
-          </span>
+      <div
+        ref={handleMinRef}
+        className={`${styles.rangeHandle} ${selectedHandle === 'min' ? styles.activeHandle : ''}`}
+        style={getHandleStyle('min')}
+        onMouseDown={(e) => handlePointerDown(e, 'min')}
+        onTouchStart={(e) => handlePointerDown(e, 'min')}
+        role="slider"
+        aria-label="min"
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={getDisplayedValue('min')}
+        data-testid="handle-min"
+      >
+        <span className={styles.handleLabel} style={{ marginLeft: '-12px' }}>
+          {getDisplayedValue('min').toFixed(2)}€
+        </span>
+      </div>
+      <div
+        ref={handleMaxRef}
+        className={`${styles.rangeHandle} ${selectedHandle === 'max' ? styles.activeHandle : ''}`}
+        style={getHandleStyle('max')}
+        onMouseDown={(e) => handlePointerDown(e, 'max')}
+        onTouchStart={(e) => handlePointerDown(e, 'max')}
+        role="slider"
+        aria-label="max"
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={getDisplayedValue('max')}
+        data-testid="handle-max"
+      >
+        <span className={styles.handleLabel} style={{ marginLeft: '12px' }}>
+          {getDisplayedValue('max').toFixed(2)}€
+        </span>
       </div>
     </div>
   );
